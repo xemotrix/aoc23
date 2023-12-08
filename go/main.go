@@ -7,12 +7,13 @@ import (
 	"aoc23/day04"
 	"aoc23/day05"
 	"aoc23/day06"
+	"aoc23/day07"
 	"fmt"
 	"time"
 )
 
 func main() {
-	// fmt.Println(fmtRes(6, measured(day06.Run)))
+	// fmt.Println(fmtRes(7, measured(day07.Run)))
 	start := time.Now()
 	runAll()
 	fmt.Printf("Total time: %s\n", time.Since(start))
@@ -47,5 +48,6 @@ func runAll() {
 	str += fmtRes(4, measured(day04.Run))
 	str += fmtRes(5, measured(day05.Run))
 	str += fmtRes(6, measured(day06.Run))
+	str += fmtRes(7, measured(day07.Run))
 	fmt.Println(str)
 }
