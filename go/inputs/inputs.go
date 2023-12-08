@@ -22,3 +22,6 @@ var Input06 string
 
 //go:embed data/input07.txt
 var Input07 string
+
+//go:embed data/input08.txt
+var Input08 string
