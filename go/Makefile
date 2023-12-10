@@ -1,3 +1,3 @@
 run:
-	go build -o bin/aoc .
+	go build -gcflags="-B" -o bin/aoc . && \
 	./bin/aoc
