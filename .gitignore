@@ -1,3 +1,4 @@
 *.txt
 rs/target
 go/bin
+go/playground
