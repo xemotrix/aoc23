@@ -9,12 +9,15 @@ import (
 	"aoc23/day06"
 	"aoc23/day07"
 	"aoc23/day08"
+	"aoc23/day09"
+	"aoc23/day10"
 	"fmt"
+	"strings"
 	"time"
 )
 
 func main() {
-	// fmt.Println(fmtRes(8, measured(day08.Run)))
+	// fmt.Println(fmtRes(10, measured(day10.Run)))
 	start := time.Now()
 	runAll()
 	fmt.Printf("Total time: %s\n", time.Since(start))
@@ -42,14 +45,16 @@ func measured[T any](f func() T) measuredRes[T] {
 }
 
 func runAll() {
-	str := ""
-	str += fmtRes(1, measured(day01.Run))
-	str += fmtRes(2, measured(day02.Run))
-	str += fmtRes(3, measured(day03.Run))
-	str += fmtRes(4, measured(day04.Run))
-	str += fmtRes(5, measured(day05.Run))
-	str += fmtRes(6, measured(day06.Run))
-	str += fmtRes(7, measured(day07.Run))
-	str += fmtRes(8, measured(day08.Run))
-	fmt.Println(str)
+	b := strings.Builder{}
+	b.WriteString(fmtRes(1, measured(day01.Run)))
+	b.WriteString(fmtRes(2, measured(day02.Run)))
+	b.WriteString(fmtRes(3, measured(day03.Run)))
+	b.WriteString(fmtRes(4, measured(day04.Run)))
+	b.WriteString(fmtRes(5, measured(day05.Run)))
+	b.WriteString(fmtRes(6, measured(day06.Run)))
+	b.WriteString(fmtRes(7, measured(day07.Run)))
+	b.WriteString(fmtRes(8, measured(day08.Run)))
+	b.WriteString(fmtRes(9, measured(day09.Run)))
+	b.WriteString(fmtRes(10, measured(day10.Run)))
+	fmt.Println(b.String())
 }
