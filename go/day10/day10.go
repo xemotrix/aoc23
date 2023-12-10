@@ -2,23 +2,20 @@ package day10
 
 import (
 	"aoc23/inputs"
-	"errors"
-	"fmt"
 )
 
 func Run() [2]int {
 	pmap := parse()
 	p1 := part1(&pmap)
 	p2 := part2(&pmap)
-	// pmap.debug(pmap.start)
 	return [2]int{p1, p2}
 }
 
 func part2(pmap *PipeMap) int {
-	markOuter(pmap, 0)
 	c := 0
 	var buffer rune
 	in := false
+
 	for i, r := range pmap.runes {
 		if pmap.runes[i] == '\n' {
 			in = false
@@ -49,47 +46,21 @@ func part2(pmap *PipeMap) int {
 				buffer = 'F'
 			}
 		} else if in {
-			pmap.enclosed[i] = in
 			c++
 		}
 	}
 	return c
 }
 
-func markOuter(pmap *PipeMap, current int) {
-	pmap.enclosed[current] = true
-	for dir := NOR; dir <= WES; dir <<= 1 {
-		newPos := pmap.move(current, dir)
-		if newPos < 0 || newPos >= len(pmap.runes) || pmap.runes[newPos] == '\n' || pmap.visited[newPos] || pmap.enclosed[newPos] {
-			continue
-		}
-		pmap.enclosed[newPos] = true
-		markOuter(pmap, newPos)
-	}
-}
-
 func part1(pmap *PipeMap) int {
 	current := pmap.start
-	pmap.visited[current] = true
-
-	for dir := NOR; dir <= WES; dir <<= 1 {
-		moved := pmap.move(current, dir)
-		err := pmap.legal(current, moved, dir)
-		if err != nil {
-			continue
-		}
-		current = moved
-		break
-	}
-
 	count := 1
 
 outer:
 	for {
 		for dir := NOR; dir <= WES; dir <<= 1 {
 			newPos := pmap.move(current, dir)
-			err := pmap.legal(current, newPos, dir)
-			if err != nil || pmap.visited[newPos] {
+			if pmap.visited[newPos] || !pmap.legal(current, newPos, dir) {
 				continue
 			}
 			pmap.visited[current] = true
@@ -106,8 +77,6 @@ outer:
 func parse() PipeMap {
 	s := []rune(inputs.Input10)
 	width := 0
-	height := 0
-
 	graph := make([]byte, len(s))
 	start := 0
 
@@ -115,7 +84,6 @@ func parse() PipeMap {
 		if s[i] == '\n' {
 			if width == 0 {
 				width = i
-				height = len(s)/i - 1
 			}
 			continue
 		}
@@ -140,19 +108,15 @@ func parse() PipeMap {
 		default:
 			panic("unknown rune")
 		}
-
 	}
 
 	visited := make([]bool, len(graph))
-	enclosed := make([]bool, len(graph))
 	return PipeMap{
-		runes:    s,
-		graph:    graph,
-		start:    start,
-		visited:  visited,
-		enclosed: enclosed,
-		width:    width,
-		height:   height,
+		runes:   s,
+		graph:   graph,
+		start:   start,
+		visited: visited,
+		width:   width,
 	}
 }
 
@@ -164,13 +128,11 @@ const (
 )
 
 type PipeMap struct {
-	runes    []rune
-	graph    []byte
-	visited  []bool
-	enclosed []bool
-	start    int
-	width    int
-	height   int
+	runes   []rune
+	graph   []byte
+	visited []bool
+	start   int
+	width   int
 }
 
 func (m *PipeMap) move(idx int, dir byte) int {
@@ -191,75 +153,21 @@ func (m *PipeMap) move(idx int, dir byte) int {
 	return newPos
 }
 
-func (m *PipeMap) legal(idx, newPos int, dir byte) error {
-	if m.graph[idx]&dir == 0 {
-		return errors.New("illegal move")
-	}
-
-	if newPos < 0 || newPos >= len(m.graph) {
-		return errors.New(fmt.Sprintf("index %d out of bounds", newPos))
-	}
-
-	if m.graph[newPos] == 0 {
-		return errors.New("empty space")
+func (m *PipeMap) legal(idx, newPos int, dir byte) bool {
+	if m.graph[idx]&dir == 0 || newPos < 0 || newPos >= len(m.graph) || m.graph[newPos] == 0 {
+		return false
 	}
 
 	newDirs := m.graph[newPos]
-	var connected bool
-	if dir == NOR {
-		connected = (newDirs & SOU) != 0
-	} else if dir == EAS {
-		connected = (newDirs & WES) != 0
-	} else if dir == SOU {
-		connected = (newDirs & NOR) != 0
-	} else if dir == WES {
-		connected = (newDirs & EAS) != 0
+	if dir == NOR && (newDirs&SOU) != 0 {
+		return true
+	} else if dir == EAS && (newDirs&WES) != 0 {
+		return true
+	} else if dir == SOU && (newDirs&NOR) != 0 {
+		return true
+	} else if dir == WES && (newDirs&EAS) != 0 {
+		return true
 	}
 
-	if !connected {
-		return errors.New(fmt.Sprintf(
-			"not connected %d [%c] -> %d [%c] with direction %04b (%04b)",
-			idx, m.runes[idx], newPos, m.runes[newPos], dir, newDirs))
-	}
-
-	return nil
-}
-
-func (pmap *PipeMap) debug(idx int) {
-	pre := "\033[35;40m"
-	post := "\033[0m"
-	enclosed := "\033[92;40m"
-	for i, r := range pmap.runes {
-		if pmap.enclosed[i] {
-			fmt.Print(enclosed)
-		} else if pmap.visited[i] {
-			fmt.Print(pre)
-		}
-		if i == idx {
-			fmt.Print("@")
-		} else if r == '-' {
-			fmt.Printf("%c", '━')
-		} else if r == '|' {
-			fmt.Printf("%c", '┃')
-		} else if r == 'L' {
-			fmt.Printf("%c", '┗')
-		} else if r == '7' {
-			fmt.Printf("%c", '┓')
-		} else if r == 'J' {
-			fmt.Printf("%c", '┛')
-		} else if r == 'F' {
-			fmt.Printf("%c", '┏')
-		} else if r == 'S' {
-			fmt.Print("S")
-		} else if r == '.' {
-			fmt.Print("X")
-		} else if r == '\n' {
-			fmt.Println()
-		}
-
-		if pmap.visited[i] || pmap.enclosed[i] {
-			fmt.Print(post)
-		}
-	}
-	fmt.Println()
+	return false
 }
