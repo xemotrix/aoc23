@@ -31,3 +31,6 @@ var Input09 string
 
 //go:embed data/input10.txt
 var Input10 string
+
+//go:embed data/input11.txt
+var Input11 string
