@@ -1,76 +1,102 @@
-use regex::Regex;
-
 pub fn run() -> [u32; 2] {
     let input: &mut str = &mut include_str!("../inputs/input03.txt").to_owned();
 
-    println!("{}", input);
     let parsed = parse(input);
-    [1, 2]
+    let p1 = part1(parsed);
+    let p2 = part2(parse(input));
+    [p1, p2]
 }
 
-fn part01(numbers: Vec<Number>, symbols: Vec<Symbol>) -> u32 {
-    symbols.iter().map(|s| {
-        numbers.iter().map(|n| {
-            if n.from <= s.idx && s.idx <= n.to {
-                n.num
-            } else {
-                0
+fn parse(input: &mut str) -> Vec<char> {
+    input.chars().collect()
+}
+
+fn part2(mut input: Vec<char>) -> u32 {
+    let mut sum = 0;
+    for i in 0..input.len() {
+        if input[i] == '*' {
+            let gear_nums = search_gears(i, &mut input);
+            if gear_nums.len() != 2 {
+                continue;
             }
-        })
-    });
-    0
+            sum += gear_nums[0] * gear_nums[1];
+        }
+    }
+    sum
 }
 
-#[derive(Debug)]
-struct Number {
-    num: i32,
-    from: usize,
-    to: usize,
-}
-
-#[derive(Debug)]
-struct Symbol {
-    sym: char,
-    idx: usize,
-}
-
-fn parse(input: &mut str) -> (Vec<Number>, Vec<Symbol>) {
-    let r_num = Regex::new(r"\d+").unwrap();
-
-    let v = r_num
-        .captures_iter(input)
-        .filter_map(|m| match m.get(0) {
-            Some(mch) => {
-                let num = Number {
-                    num: mch.as_str().parse::<i32>().unwrap(),
-                    from: mch.start(),
-                    to: mch.end(),
-                };
-                Some(num)
+fn search_gears(idx: usize, input: &mut [char]) -> Vec<u32> {
+    let mut nums = vec![];
+    let width = input.iter().position(|c| *c == '\n').unwrap() as i32;
+    for i in get_indices(idx, width as usize) {
+        if let Some(c) = input.get(i) {
+            if c.is_ascii_digit() {
+                nums.push(get_num(i, input));
             }
-            None => None,
-        })
-        .collect::<Vec<Number>>();
+        }
+    }
+    nums
+}
 
-    let s = input
-        .chars()
+fn part1(mut input: Vec<char>) -> u32 {
+    let mut sum = 0;
+    for i in 0..input.len() {
+        if !is_symbol(&input[i]) {
+             continue;
+        }
+        sum += search_numbers(i, &mut input)
+            .iter()
+            .fold(0, |acc, x| acc + *x);
+    }
+    sum
+}
+
+fn search_numbers(idx: usize, input: &mut [char]) -> Vec<u32> {
+    let width = input.iter().position(|c| *c == '\n').unwrap() as i32;
+    let indices = get_indices(idx, width as usize);
+    let mut nums = vec![];
+    for i in indices {
+        if let Some(c) = input.get(i) {
+            if c.is_ascii_digit() {
+                nums.push(get_num(i, input));
+            }
+        }
+    }
+    nums
+}
+
+fn get_indices(i: usize, width: usize) -> Vec<usize> {
+    vec![
+        i - (width + 1) - 1,
+        i - (width + 1),
+        i - (width + 1) + 1,
+        i - 1,
+        i + 1,
+        i + (width + 1) - 1,
+        i + (width + 1),
+        i + (width + 1) + 1,
+    ]
+}
+
+fn get_num(idx: usize, input: &mut [char]) -> u32 {
+    let offset = input[idx..]
+        .iter()
+        .position(|c| !c.is_ascii_digit())
+        .unwrap();
+
+    input[..idx + offset]
+        .iter_mut()
+        .rev()
+        .take_while(|c| c.is_ascii_digit())
         .enumerate()
-        .filter_map(|(i, c)| {
-            if is_symbol(&c) {
-                Some(Symbol { sym: c, idx: i })
-            } else {
-                None
-            }
+        .fold(0, |acc, (i, c)| {
+            let num = acc + c.to_digit(10).unwrap() * u32::pow(10, i as u32);
+            *c = '.';
+            num
         })
-        .collect::<Vec<Symbol>>();
-
-    (v, s)
 }
+
 
 fn is_symbol(c: &char) -> bool {
-    *c != '.' && !('0'..='9').contains(c)
+    *c != '.' && !c.is_ascii_digit() && *c != '\n'
 }
-
-// fn is_symbol(c: &char) -> bool {
-//     *c != '.' && !('0'..='9').contains(c)
-// }

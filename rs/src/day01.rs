@@ -1,4 +1,4 @@
-pub fn run() -> [u32; 2]{
+pub fn run() -> [u32; 2] {
     let input = include_str!("../inputs/input01.txt");
     let p1 = part01(input);
     let p2 = part02(input);

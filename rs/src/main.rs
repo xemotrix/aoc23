@@ -6,7 +6,8 @@ use std::time::Instant;
 fn main() {
     let start = Instant::now();
 
-    day03::run();
+    let res = day03::run();
+    println!("Day 3:\n- part1: {}\n- part2: {}", res[0], res[1]);
     // run_all();
 
     println!("Time elapsed: {:?}", start.elapsed());
@@ -17,6 +18,7 @@ fn run_all() {
     let mut res_str = "".to_string();
     res_str += &fmt_res(1, day01::run());
     res_str += &fmt_res(2, day02::run());
+    res_str += &fmt_res(3, day03::run());
     println!("{}", res_str);
 }
 
