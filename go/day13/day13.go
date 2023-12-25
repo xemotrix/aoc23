@@ -52,25 +52,23 @@ type p1Res struct {
 func calc(part [][]rune) (int, p1Res) {
 	hSymSet := make([]int, len(part[0]))
 	vSymSet := make([]int, len(part))
-
 	trans := transpose(part)
 	for i := 0; i < max(len(part), len(trans)); i++ {
 		if len(hSymSet) > 0 && i < len(part) {
-			symH := findSymmetry(part[i])
-			hSymSet = addFreqMaps(hSymSet, symH)
+			addFreqMaps(hSymSet, findSymmetry(part[i]))
 		}
 		if len(vSymSet) > 0 && i < len(trans) {
-			symV := findSymmetry(trans[i])
-			vSymSet = addFreqMaps(vSymSet, symV)
+			addFreqMaps(vSymSet, findSymmetry(trans[i]))
 		}
 	}
 	maxH, qH := findMaxIdx(hSymSet)
+	res := p1Res{hSymSet, vSymSet, len(part), len(part[0])}
 	if qH == len(part) {
-		return maxH, p1Res{hSymSet, vSymSet, len(part), len(part[0])}
+		return maxH, res
 	}
 	maxV, qV := findMaxIdx(vSymSet)
 	if qV == len(part[0]) {
-		return maxV * 100, p1Res{hSymSet, vSymSet, len(part), len(part[0])}
+		return maxV * 100, res
 	}
 	panic("not found")
 }
@@ -94,12 +92,10 @@ func findMaxIdx(freq []int) (int, int) {
 	return maxIdx, maxN
 }
 
-func addFreqMaps(a, b []int) []int {
-	res := make([]int, len(a))
+func addFreqMaps(a, b []int) {
 	for i := range a {
-		res[i] = a[i] + b[i]
+		a[i] += b[i]
 	}
-	return res
 }
 
 func transpose(part [][]rune) [][]rune {
